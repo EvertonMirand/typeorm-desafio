@@ -4,15 +4,11 @@ import TransactionsRepository from '../repositories/TransactionsRepository';
 import CategoryRepository from '../repositories/CategoryRepository';
 import AppError from '../errors/AppError';
 
-interface CategoryRequest {
-  title: string;
-}
-
 interface Request {
   title: string;
   value: number;
   type: 'income' | 'outcome';
-  category: CategoryRequest;
+  category: string;
 }
 
 class CreateTransactionService {
@@ -20,14 +16,12 @@ class CreateTransactionService {
     title,
     value,
     type,
-    category: { title: categoryTitle },
+    category: categoryTitle,
   }: Request): Promise<Transaction> {
     const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoryRepository = getCustomRepository(CategoryRepository);
 
-    const category = await categoryRepository.getCategory({
-      title: categoryTitle,
-    });
+    const category = await categoryRepository.getCategory(categoryTitle);
 
     if (type === 'outcome') {
       const { total } = await transactionRepository.getBalance();
