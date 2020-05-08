@@ -4,7 +4,7 @@ import { getCustomRepository } from 'typeorm';
 import Transaction from '../models/Transaction';
 
 import { csvToJson } from '../utils/FileUtils';
-import CreateTransactionService from './CreateTransactionService';
+
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import CategoryRepository from '../repositories/CategoryRepository';
 import Category from '../models/Category';
