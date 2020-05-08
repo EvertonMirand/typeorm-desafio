@@ -16,7 +16,6 @@ export default class CreateCategory1588809669856 implements MigrationInterface {
           {
             name: 'title',
             type: 'varchar',
-            isGenerated: false,
           },
           {
             name: 'created_at',

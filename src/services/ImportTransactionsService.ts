@@ -1,9 +1,12 @@
 import fs from 'fs';
 
+import { getCustomRepository } from 'typeorm';
 import Transaction from '../models/Transaction';
 
 import { csvToJson } from '../utils/FileUtils';
 import CreateTransactionService from './CreateTransactionService';
+import TransactionsRepository from '../repositories/TransactionsRepository';
+import CategoryRepository from '../repositories/CategoryRepository';
 
 interface Request {
   filePath: string;
@@ -11,14 +14,25 @@ interface Request {
 
 class ImportTransactionsService {
   async execute({ filePath }: Request): Promise<Transaction[]> {
-    const value = await csvToJson(filePath);
+    const values = await csvToJson(filePath);
 
-    const createTransaction = new CreateTransactionService();
+    const transactionRepository = getCustomRepository(TransactionsRepository);
+    const categoryRepository = getCustomRepository(CategoryRepository);
 
-    const transactionsPromise = value.map(async val =>
-      createTransaction.execute(val),
+    const transactions = await Promise.all(
+      values.map(async ({ title, type, category: categoryTitle, value }) => {
+        const category = await categoryRepository.getCategory(categoryTitle);
+        const transaction = transactionRepository.create({
+          category,
+          title,
+          value: Number(value),
+          type,
+        });
+        return transaction;
+      }),
     );
-    const transactions = await Promise.all(transactionsPromise);
+
+    await transactionRepository.save(transactions);
 
     await fs.promises.unlink(filePath);
 
