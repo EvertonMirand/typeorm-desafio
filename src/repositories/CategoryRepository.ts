@@ -5,16 +5,16 @@ import Category from '../models/Category';
 @EntityRepository(Category)
 class CategoryRepository extends Repository<Category> {
   public async getCategory(title: string): Promise<Category> {
-    let category = await this.findOne({
-      where: { title },
-    });
-
-    if (!category) {
-      category = this.create({ title });
+    try {
+      const category = await this.findOneOrFail({
+        where: { title },
+      });
+      return category;
+    } catch {
+      const category = this.create({ title });
       await this.save(category);
+      return category;
     }
-
-    return category;
   }
 }
 

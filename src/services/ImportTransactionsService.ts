@@ -7,6 +7,7 @@ import { csvToJson } from '../utils/FileUtils';
 import CreateTransactionService from './CreateTransactionService';
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import CategoryRepository from '../repositories/CategoryRepository';
+import Category from '../models/Category';
 
 interface Request {
   filePath: string;
@@ -18,16 +19,18 @@ class ImportTransactionsService {
 
     const transactionRepository = getCustomRepository(TransactionsRepository);
     const categoryRepository = getCustomRepository(CategoryRepository);
-
+    const categories: Category[] = [];
     const transactions = await Promise.all(
       values.map(async ({ title, type, category: categoryTitle, value }) => {
         const category = await categoryRepository.getCategory(categoryTitle);
+        categories.push(category);
         const transaction = transactionRepository.create({
-          category,
           title,
           value: Number(value),
           type,
         });
+
+        transaction.category = category;
         return transaction;
       }),
     );
